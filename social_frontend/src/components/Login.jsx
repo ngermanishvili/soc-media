@@ -34,9 +34,11 @@ const Login = () => {
       userName: name,
       image: imageUrl,
     };
+
     client.createIfNotExists(doc).then(() => {
       navigate("/", { replace: true });
-    });
+    }); 
+    
   };
 
   return (
