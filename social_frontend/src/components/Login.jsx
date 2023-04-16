@@ -4,10 +4,41 @@ import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import shareVideo from "../assets/share.mp4";
 import logo from "../assets/logowhite.png";
+import { client } from "../client";
 
 const Login = () => {
+  const navigate = useNavigate();
   const responseGoogle = (response) => {
+    console.log("response:", response);
+    if (!response.profileObj) {
+      console.warn("Profile object is missing from Google API response");
+
+      // Try to extract name and email from response object
+      const name = response?.tokenIdPayload?.name || "Unknown";
+      const email = response?.tokenIdPayload?.email || "Unknown";
+
+      // Store user information in local storage
+      localStorage.setItem("user", JSON.stringify({ name, email }));
+
+      // Navigate to home page
+      navigate("/", { replace: true });
+      return;
+    }
+
+    // Store user information in local storage
+    localStorage.setItem("user", JSON.stringify(response.profileObj));
+    const { name, googleId, imageUrl } = response.profileObj;
+    const doc = {
+      _id: googleId,
+      _type: "user",
+      userName: name,
+      image: imageUrl,
+    };
+    client.createIfNotExists(doc).then(() => {
+      navigate("/", { replace: true });
+    });
   };
+
   return (
     <div className="flex justify-start items-center flex-col h-screen">
       <div className="relative w-full h-full">
